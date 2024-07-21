@@ -1,0 +1,18 @@
+# Ignorar el archivo .env
+.env
+
+# Ignorar el entorno virtual (cambia .streamlitiol si es diferente)
+.streamlitiol/
+
+# Ignorar archivos de configuración de IDE (puede variar según el IDE)
+.vscode/
+.idea/
+
+# Ignorar archivos compilados de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar otros archivos temporales
+*.log
+*.sqlite3

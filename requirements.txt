@@ -1,0 +1,6 @@
+streamlit
+supabase
+pandas
+httpx[http2]
+dotenv
+os
