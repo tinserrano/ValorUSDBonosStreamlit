@@ -1,5 +1,6 @@
 # Ignorar el archivo .env
 .env
+.secrets.toml
 
 # Ignorar el entorno virtual (cambia .streamlitiol si es diferente)
 .streamlitiol/
