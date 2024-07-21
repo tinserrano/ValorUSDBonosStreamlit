@@ -3,4 +3,3 @@ supabase
 pandas
 httpx[http2]
 python-dotenv
-os
