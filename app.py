@@ -3,7 +3,7 @@ from supabase import create_client, Client
 import pandas as pd
 import locale
 from datetime import datetime
-from dotenv import load_dotenv
+from git commit -m "Primer commit del proyecto" import load_dotenv
 import os
 
 # Configura tu URL y clave API de Supabase
