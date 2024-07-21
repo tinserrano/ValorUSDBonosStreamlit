@@ -7,8 +7,11 @@ from dotenv import load_dotenv
 import os
 
 # Configura tu URL y clave API de Supabase
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+# Obtener claves desde .env o secretos de Streamlit
+load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL", st.secrets.get("supabase", {}).get("url"))
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", st.secrets.get("supabase", {}).get("key"))
+
 SUPABASE_TABLE = "data"
 
 @st.cache_resource
