@@ -10,10 +10,8 @@ import os
 #SUPABASE_URL = os.getenv('SUPABASE_URL')
 #SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 
-
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_API_KEY = st.secrets["SUPABASE_API_KEY"]
-
 
 
 SUPABASE_TABLE = "data"
@@ -22,12 +20,36 @@ SUPABASE_TABLE = "data"
 def init_supabase() -> Client:
     return create_client(SUPABASE_URL, SUPABASE_API_KEY)
 
+
 @st.cache_data
+# def load_data():
+#     supabase = init_supabase()
+#     response = supabase.table("data").select("*").execute()
+#     data = response.data
+#     return pd.DataFrame(data)
+
 def load_data():
     supabase = init_supabase()
+    
+    query = """
+    SELECT DISTINCT ON ("Bono") *
+    FROM data
+    ORDER BY "Bono", "Fecha Hora" DESC
+    """
+    
     response = supabase.table("data").select("*").execute()
     data = response.data
-    return pd.DataFrame(data)
+    
+    # Convertir los datos a un DataFrame
+    df = pd.DataFrame(data)
+    
+    # Aplicar la lógica de la consulta en Python
+    df['Fecha Hora'] = pd.to_datetime(df['Fecha Hora'])
+    df = df.sort_values(['Bono', 'Fecha Hora'], ascending=[True, False])
+    df = df.groupby('Bono').first().reset_index()
+    
+    return df
+
 
 def formato_numero(numero):
     return locale.format_string('%.2f', numero, grouping=True).replace('.', ',')
@@ -54,6 +76,15 @@ def calcular_tipo_cambio_implicito(df):
             # Datos para VENTAUSD
             precio_compra_peso_venta = df[(df['Bono'] == bono_peso) & (df['Plazo'] == plazo_peso)]['Mejor Punta Compra Precio'].values
             precio_venta_dolar_venta = df[(df['Bono'] == bono_dolar) & (df['Plazo'] == plazo_dolar)]['Mejor Punta Venta Precio'].values
+
+            # Obtener la fecha y hora de cotización del bono en pesos de manera segura
+            fecha_hora_df = df[(df['Bono'] == bono_peso) & (df['Plazo'] == plazo_peso)]
+            if not fecha_hora_df.empty:
+                fecha_hora_cotizacion = fecha_hora_df['Fecha Hora'].iloc[0]
+            else:
+                fecha_hora_cotizacion = None  # O puedes usar un valor por defecto
+
+
             
             if (len(ultimo_precio_peso) > 0 and len(ultimo_precio_dolar) > 0 and ultimo_precio_dolar[0] != 0 and
                 len(precio_venta_peso_compra) > 0 and len(precio_compra_dolar_compra) > 0 and precio_compra_dolar_compra[0] != 0 and
@@ -76,7 +107,8 @@ def calcular_tipo_cambio_implicito(df):
                     'Precio Compra ARS (VENTAUSD)': formato_numero(precio_compra_peso_venta[0]),
                     'Precio Venta USD (VENTAUSD)': formato_numero(precio_venta_dolar_venta[0]),
                     'Tipo de Cambio Implícito (VENTAUSD)': formato_numero(tipo_cambio_venta_usd),
-                    'fecha_hora_consulta': datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    'fecha_hora_consulta': datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    'Fecha Hora de Cotizacion': fecha_hora_cotizacion.strftime("%d/%m/%Y %H:%M:%S") if fecha_hora_cotizacion else None
                 })
             else:
                 st.warning(f"No se pudo calcular el tipo de cambio para {bono_peso}({plazo_peso})/{bono_dolar}({plazo_dolar})")
