@@ -31,11 +31,8 @@ def parse_fecha_hora(fecha_hora_str):
 def formato_numero(numero):
     return locale.format_string('%.2f', numero, grouping=True).replace('.', ',')
 
-def obtener_access_token():
+def obtener_access_token(username, password):
     url = "https://api.invertironline.com/token"
-    username = usernw()
-    password = passw2()
-
     data = {
         "username": username,
         "password": password,
@@ -171,24 +168,43 @@ def calcular_tipo_cambio_implicito(df):
 def main():
     st.title('Cotizaciones de Bonos y Tipo de Cambio Implícito')
 
-    if st.button('Actualizar Datos'):
-        with st.spinner('Obteniendo datos de cotizaciones...'):
-            df_bonos = obtener_y_procesar_datos()
-        
-        if not df_bonos.empty:
-            st.subheader('Cotizaciones de Bonos')
-            st.dataframe(df_bonos)
+    # Panel lateral para ingresar credenciales
+    st.sidebar.header("Credenciales")
+    username = st.sidebar.text_input("Usuario")
+    password = st.sidebar.text_input("Contraseña", type="password")
 
-            with st.spinner('Calculando tipo de cambio implícito...'):
-                df_tipo_cambio = calcular_tipo_cambio_implicito(df_bonos)
-            
-            if not df_tipo_cambio.empty:
-                st.subheader('Tipo de Cambio Implícito')
-                st.dataframe(df_tipo_cambio)
+    if st.sidebar.button('Iniciar Sesión'):
+        if username and password:
+            access_token = obtener_access_token(username, password)
+            if access_token:
+                st.session_state['access_token'] = access_token
+                st.success("Sesión iniciada con éxito")
             else:
-                st.error("No se pudo calcular el tipo de cambio implícito")
+                st.error("No se pudo iniciar sesión. Verifica tus credenciales.")
         else:
-            st.error("No se pudieron obtener datos de cotizaciones")
+            st.warning("Por favor, ingresa tu usuario y contraseña")
+
+    if st.button('Actualizar Datos'):
+        if 'access_token' in st.session_state:
+            with st.spinner('Obteniendo datos de cotizaciones...'):
+                df_bonos = obtener_y_procesar_datos(st.session_state['access_token'])
+            
+            if not df_bonos.empty:
+                st.subheader('Cotizaciones de Bonos')
+                st.dataframe(df_bonos)
+
+                with st.spinner('Calculando tipo de cambio implícito...'):
+                    df_tipo_cambio = calcular_tipo_cambio_implicito(df_bonos)
+                
+                if not df_tipo_cambio.empty:
+                    st.subheader('Tipo de Cambio Implícito')
+                    st.dataframe(df_tipo_cambio)
+                else:
+                    st.error("No se pudo calcular el tipo de cambio implícito")
+            else:
+                st.error("No se pudieron obtener datos de cotizaciones")
+        else:
+            st.warning("Por favor, inicia sesión primero")
 
 if __name__ == "__main__":
     main()
