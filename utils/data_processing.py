@@ -1,5 +1,6 @@
 import pandas as pd
 from datetime import datetime
+import locale
 
 def calcular_tipo_cambio_implicito(df):
     # Lista de todos los bonos
