@@ -32,12 +32,12 @@ def load_data():
     supabase = init_supabase()
     
     query = """
-    SELECT DISTINCT ON ("Bono") *
+    SELECT *
     FROM data
     ORDER BY "Bono", "Fecha Hora" DESC
     """
     
-    response = supabase.table("data").select("*").execute()
+    response = supabase.table("data").select("*").order("Bono", desc=False).order("Fecha Hora", desc=True).execute()
     data = response.data
     
     # Convertir los datos a un DataFrame
@@ -45,10 +45,20 @@ def load_data():
     
     # Aplicar la lógica de la consulta en Python
     df['Fecha Hora'] = pd.to_datetime(df['Fecha Hora'])
-    df = df.sort_values(['Bono', 'Fecha Hora'], ascending=[True, False])
-    df = df.groupby('Bono').first().reset_index()
+    # df = df.sort_values(['Bono', 'Fecha Hora'], ascending=[True, False])
+    # df = df.groupby('Bono').first().reset_index()
     
+
+    # Obtener el último dato para cada bono en t0 y t1
+    df_t0 = df[df['Plazo'] == 't0'].groupby('Bono').first().reset_index()
+    df_t1 = df[df['Plazo'] == 't1'].groupby('Bono').first().reset_index()
+    
+    # Combinar los resultados
+    df = pd.concat([df_t0, df_t1])
+
     return df
+
+
 
 
 def formato_numero(numero):
@@ -62,6 +72,7 @@ def calcular_tipo_cambio_implicito(df):
     combinaciones_plazos = [('t0', 't0'), ('t0', 't1'), ('t1', 't1')]
     
     resultados = []
+    warnings = []
 
     for bono_peso, bono_dolar in bonos_pares:
         for plazo_peso, plazo_dolar in combinaciones_plazos:
@@ -83,8 +94,6 @@ def calcular_tipo_cambio_implicito(df):
                 fecha_hora_cotizacion = fecha_hora_df['Fecha Hora'].iloc[0]
             else:
                 fecha_hora_cotizacion = None  # O puedes usar un valor por defecto
-
-
             
             if (len(ultimo_precio_peso) > 0 and len(ultimo_precio_dolar) > 0 and ultimo_precio_dolar[0] != 0 and
                 len(precio_venta_peso_compra) > 0 and len(precio_compra_dolar_compra) > 0 and precio_compra_dolar_compra[0] != 0 and
@@ -111,9 +120,9 @@ def calcular_tipo_cambio_implicito(df):
                     'Fecha Hora de Cotizacion': fecha_hora_cotizacion.strftime("%d/%m/%Y %H:%M:%S") if fecha_hora_cotizacion else None
                 })
             else:
-                st.warning(f"No se pudo calcular el tipo de cambio para {bono_peso}({plazo_peso})/{bono_dolar}({plazo_dolar})")
+                warnings.append(f"No se pudo calcular el tipo de cambio para {bono_peso}({plazo_peso})/{bono_dolar}({plazo_dolar})")
 
-    return pd.DataFrame(resultados)
+    return pd.DataFrame(resultados), warnings
 
 def main():
     st.title("Cálculo de Tipo de Cambio Implícito")
@@ -122,7 +131,8 @@ def main():
     df_bonos = load_data()
 
     st.write("Datos cargados. Calculando tipo de cambio implícito...")
-    df_tipo_cambio = calcular_tipo_cambio_implicito(df_bonos)
+    df_tipo_cambio, warnings = calcular_tipo_cambio_implicito(df_bonos)  # Desempaquetar la tupla
+
 
     st.write("Cálculo completado!")
 
@@ -140,6 +150,12 @@ def main():
     ]
 
     st.dataframe(df_filtrado)
+
+        # Mostrar los warnings después de la tabla
+    if warnings:
+        st.subheader("Advertencias:")
+        for warning in warnings:
+            st.warning(warning)
 
 if __name__ == "__main__":
     main()

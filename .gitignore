@@ -1,6 +1,7 @@
 # Ignorar el archivo .env
 .env
 .secrets.toml
+contras.py
 
 # Ignorar el entorno virtual (cambia .streamlitiol si es diferente)
 .streamlitiol/
