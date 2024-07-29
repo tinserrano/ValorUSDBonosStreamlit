@@ -20,7 +20,7 @@ def main():
                 st.session_state.access_token = access_token
                 st.session_state.authenticated = True
                 st.success("Sesión iniciada con éxito")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error(f"No se pudo iniciar sesión. Error: {error}")
         else:
@@ -34,7 +34,7 @@ def main():
         if st.sidebar.button('Cerrar Sesión'):
             st.session_state.authenticated = False
             st.session_state.pop('access_token', None)
-            st.experimental_rerun()
+            st.rerun()
         
         st.title('Bienvenido al Análisis de Bonos')
         st.write('Selecciona una opción del menú lateral para comenzar.')
