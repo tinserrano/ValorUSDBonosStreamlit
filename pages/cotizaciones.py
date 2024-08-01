@@ -1,7 +1,6 @@
 import streamlit as st
 from utils.api_functions import obtener_y_procesar_datos
-
-
+from footer import footer
 
 
 def show():
@@ -22,3 +21,4 @@ def show():
 
 if __name__ == "__main__":
     show()
+    footer()

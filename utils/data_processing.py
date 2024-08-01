@@ -68,4 +68,3 @@ def calcular_tipo_cambio_implicito(df):
 
 def formato_numero(numero):
     return locale.format_string('%.2f', numero, grouping=True).replace('.', ',')
-

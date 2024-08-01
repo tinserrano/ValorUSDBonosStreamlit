@@ -1,6 +1,8 @@
 import streamlit as st
 from utils.api_functions import obtener_y_procesar_datos
 from utils.data_processing import calcular_tipo_cambio_implicito
+from footer import footer
+
 
 def show():
     st.title('Tipo de Cambio Implícito')
@@ -21,3 +23,4 @@ def show():
 
 if __name__ == "__main__":
     show()
+    footer()
