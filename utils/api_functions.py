@@ -20,9 +20,7 @@ def parse_fecha_hora(fecha_hora_str):
             st.error(f"No se pudo parsear la fecha: {fecha_hora_str}")
             st.error(f"Error: {e}")
             return None
-        
-
-
+    
 
 
 def obtener_access_token(username, password):
@@ -63,7 +61,28 @@ def obtener_cotizacion_detalle(access_token, mercado, bono, plazo):
         st.error(f"Respuesta: {e.response.text if e.response else 'No response'}")
         return None
     
-
+def obtener_cotizacion_detalle_v2(access_token, mercado, simbolo):
+    base_url = "https://api.invertironline.com"
+    endpoint = f"/api/v2/{mercado}/Titulos/{simbolo}/CotizacionDetalle"
+    url = base_url + endpoint
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        cotizacion = response.json()
+        st.success(f"Cotización detalle obtenida con éxito para {simbolo}")
+        return cotizacion
+    except requests.RequestException as e:
+        st.error(f"Error al obtener la cotización detalle para {simbolo}: {e}")
+        st.error(f"Respuesta: {e.response.text if e.response else 'No response'}")
+        return None
+    
+    
 def obtener_datos_bono(access_token, mercado, bono, plazos):
     datos_bono = []
     for plazo in plazos:
@@ -89,6 +108,25 @@ def obtener_datos_bono(access_token, mercado, bono, plazos):
         else:
             st.warning(f"No se pudieron obtener datos para {bono} {plazo}")
     return datos_bono
+
+
+def obtener_cotizacion_detalle_v2(access_token, mercado, simbolo):
+    base_url = "https://api.invertironline.com"
+    endpoint = f"/api/v2/{mercado}/Titulos/{simbolo}/CotizacionDetalle"
+    url = base_url + endpoint
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        cotizacion = response.json()
+        return cotizacion, None
+    except requests.RequestException as e:
+        return None, str(e)
 
 
 
