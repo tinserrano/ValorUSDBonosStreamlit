@@ -1,13 +1,31 @@
 import streamlit as st
 from utils.api_functions import obtener_access_token
 from footer import footer
+import os
 
 
 def setup_sidebar():
     st.sidebar.title("Navegación")
-    st.sidebar.page_link("app2.py", label="Inicio")
-    st.sidebar.page_link("pages/Cotizaciones.py", label="Cotizaciones")
-    st.sidebar.page_link("pages/Tipo_de_Cambio.py", label="Tipo de Cambio")
+    
+    # Enlace a la página principal
+    if st.sidebar.button("Inicio"):
+        st.switch_page("app2.py")
+    
+    # Enlace a la página de Cotizaciones
+    if st.sidebar.button("Cotizaciones"):
+        if os.path.exists("pages/Cotizaciones.py"):
+            st.switch_page("pages/Cotizaciones.py")
+        elif os.path.exists("pages/cotizaciones.py"):
+            st.switch_page("pages/cotizaciones.py")
+        else:
+            st.sidebar.error("Página de Cotizaciones no encontrada")
+    
+    # Enlace a la página de Tipo de Cambio
+    if st.sidebar.button("Tipo de Cambio"):
+        if os.path.exists("pages/tipo_de_cambio.py"):
+            st.switch_page("pages/tipo_de_cambio.py")
+        else:
+            st.sidebar.error("Página de Tipo de Cambio no encontrada")
     
     if st.sidebar.button('Cerrar Sesión'):
         st.session_state.authenticated = False
@@ -51,7 +69,7 @@ def main():
     else:
         login_form()
     
-    footer()
+    
 
 if __name__ == "__main__":
     main()
